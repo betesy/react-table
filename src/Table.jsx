@@ -17,22 +17,22 @@ const Table = React.createClass({
     bodyStyle: PropTypes.object,                          //表格体样式
     style: PropTypes.object,                              //表格最外层样式
     rowKey: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-    rowClassName: PropTypes.func,
-    expandedRowClassName: PropTypes.func,
-    childrenColumnName: PropTypes.string,
-    onExpand: PropTypes.func,
-    onExpandedRowsChange: PropTypes.func,
-    indentSize: PropTypes.number,
-    onRowClick: PropTypes.func,
-    columnsPageRange: PropTypes.array,
-    columnsPageSize: PropTypes.number,
-    expandIconColumnIndex: PropTypes.number,
-    showHeader: PropTypes.bool,
+    rowClassName: PropTypes.func,                         //行样式
+    expandedRowClassName: PropTypes.func,                 //展开行样式
+    childrenColumnName: PropTypes.string,                 //展开列名:默认为children
+    onExpand: PropTypes.func,                             //展开或收起事件
+    onExpandedRowsChange: PropTypes.func,                 //或者收起行事件
+    indentSize: PropTypes.number,                         //展开按钮占位
+    onRowClick: PropTypes.func,                           //行点击事件
+    columnsPageRange: PropTypes.array,                    //滚动列范围
+    columnsPageSize: PropTypes.number,                    //每页的个数
+    expandIconColumnIndex: PropTypes.number,              //展开行索引值
+    showHeader: PropTypes.bool,                           //是否展示表头
     title: PropTypes.func,
     footer: PropTypes.func,
     scroll: PropTypes.object,
-    rowRef: PropTypes.func,
-    getBodyWrapper: PropTypes.func,
+    rowRef: PropTypes.func,                               //设置每行ref的函数,默认ref为null
+    getBodyWrapper: PropTypes.func,                       //包装表格函数,默认不包装
   },
 
   getDefaultProps() {
@@ -81,7 +81,7 @@ const Table = React.createClass({
         expandedRowKeys.push(this.getRowKey(row));
         rows = rows.concat(row[props.childrenColumnName] || []);
       }
-    } else {                                        //否则展开传入行或者空展开
+    } else {                                        //否则展开传入行key或者不展开
       expandedRowKeys = props.expandedRowKeys || props.defaultExpandedRowKeys;
     }
 
@@ -505,7 +505,7 @@ const Table = React.createClass({
       );
     }
 
-    let BodyTable = (     //如果不是固定表格,渲染表格
+    let BodyTable = (     //渲染表格
       <div
         className={`${prefixCls}-body`}
         style={bodyStyle}
@@ -654,8 +654,10 @@ const Table = React.createClass({
   wrapPageColumn(column, hasPrev, hasNext) {
     const { prefixCls } = this.props;
     const { currentColumnsPage } = this.state;
-    const maxColumnsPage = this.getMaxColumnsPage();
+    const maxColumnsPage = this.getMaxColumnsPage();    //获得最大页
     let prevHandlerCls = `${prefixCls}-prev-columns-page`;
+
+    //判断当前页,设置翻页按钮样式
     if (currentColumnsPage === 0) {
       prevHandlerCls += ` ${prefixCls}-prev-columns-page-disabled`;
     }
@@ -665,6 +667,8 @@ const Table = React.createClass({
       nextHandlerCls += ` ${prefixCls}-next-columns-page-disabled`;
     }
     const nextHandler = <span className={nextHandlerCls} onClick={this.nextColumnsPage}></span>;
+
+    //绘制翻页按钮
     if (hasPrev) {
       column.title = <span>{prevHandler}{column.title}</span>;
       column.className = `${column.className || ''} ${prefixCls}-column-has-prev`;
